@@ -1,0 +1,14 @@
+1. show
+2. clean
+3. genraw 10   (default code128)    or   genraw 10 13 EAN13
+// 10 后面不跟数字 默认使用全部的原始图片
+// 命名以编码数字命名
+4. clean raw
+// 如果没有原生图片存在 调用 gen 会自动生成 code128 编码的条形码10个
+5. genraw 10
+6. gen '[1,2,3,4,5,6]'  
+7. clean cooked
+8. genmix '[1,4,6]'
+9. tar code128
+10. create cooked
+11. create cover
