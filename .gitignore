@@ -1,5 +1,7 @@
 __pycache__/
 .vscode/
 node_modules/
-
+cooked/
+raw/
+tar/
 .DS_Store
