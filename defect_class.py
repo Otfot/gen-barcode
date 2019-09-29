@@ -4,6 +4,8 @@ import cv2
 import execjs
 import numpy as np
 
+from PIL import Image
+
 
 class DefectSetMetaclass(type):
     """This metaclass to record the defect function and use it later
@@ -51,6 +53,8 @@ class DefectSet(metaclass=DefectSetMetaclass):
         self.barcode_option = barcode_option
         self.white_color = [255, 255, 255]
         self.black_color = [0, 0, 0]
+        # np.random
+        self.flag = True
 
     def setenv(self):
         self.raw_name_list = os.listdir(self.path['raw'])
@@ -78,7 +82,7 @@ class DefectSet(metaclass=DefectSetMetaclass):
         """
         self.gen_pic.call("gen", num, bit, self.barcode_option)
 
-    def add_salt_white(self, salt_num=3000):
+    def add_salt_white(self, salt_num=10):
         """Add the salt to the image
 
         :param salt_num: the salt number, defaults to 3000
@@ -90,16 +94,17 @@ class DefectSet(metaclass=DefectSetMetaclass):
         rows, cols, _ = img.shape
         for i in range(salt_num):
             x = np.random.randint(
-                self.barcode_option['margin'],
-                rows - self.barcode_option['margin'])
+                self.barcode_option['marginTop'],
+                rows - self.barcode_option['marginTop'])
             y = np.random.randint(
-                self.barcode_option['margin'],
-                cols - self.barcode_option['margin'])
+                self.barcode_option['marginLeft'],
+                cols - self.barcode_option['marginLeft'])
             img[x, y] = self.white_color
         # img = Image.fromarray(img)
+        img = self.resize(img)
         return img
 
-    def add_salt_black(self, salt_num=100):
+    def add_salt_black(self, salt_num=10):
         """add the salt to the image
 
         :param salt_num: the black salt number, defaults to 100
@@ -113,31 +118,33 @@ class DefectSet(metaclass=DefectSetMetaclass):
             # make optimization for different barcode type
             if self.barcode_option['format'] == 'EAN13':
                 x = np.random.randint(
-                    self.barcode_option['margin'],
-                    rows - self.barcode_option['margin'])
+                    self.barcode_option['marginTop'],
+                    rows - self.barcode_option['marginTop'])
                 y = np.random.randint(
-                    self.barcode_option['margin'] + 10,
-                    cols - self.barcode_option['margin'])
+                    self.barcode_option['marginLeft'] + 10,
+                    cols - self.barcode_option['marginLeft'])
             else:
                 x = np.random.randint(
-                    self.barcode_option['margin'],
-                    rows - self.barcode_option['margin'])
+                    self.barcode_option['marginTop'],
+                    rows - self.barcode_option['marginTop'])
                 y = np.random.randint(
-                    self.barcode_option['margin'],
-                    cols - self.barcode_option['margin'])
+                    self.barcode_option['marginLeft'],
+                    cols - self.barcode_option['marginLeft'])
             img[x, y] = self.black_color
+        img = self.resize(img)
         return img
 
     def add_white_line(self, white_line_num=14):
         img = self.img
         rows, cols, _ = img.shape
         # do processing only for the barcode section
-        for i in range(white_line_num):
+        for i in range(np.random.randint(10, white_line_num)):
             x = np.random.randint(
-                self.barcode_option['margin'],
-                rows - self.barcode_option['margin'])
+                self.barcode_option['marginTop'],
+                rows - self.barcode_option['marginTop'])
             # y=np.random.randint(0,cols)
             img[x, :] = self.white_color
+        img = self.resize(img)
         return img
 
     def add_cover(self):
@@ -154,7 +161,7 @@ class DefectSet(metaclass=DefectSetMetaclass):
         # random create the crop_width and cover_width
         # crop_width = np.random.randint(60, 120)
         crop_y = np.random.randint(
-            cols / 4, cols - self.barcode_option['margin'])
+            cols / 4, cols - self.barcode_option['marginLeft'])
         cover_width = np.random.randint(10, 25)
 
         # random generate the crop location y in a specified range
@@ -179,6 +186,7 @@ class DefectSet(metaclass=DefectSetMetaclass):
 
         dst = cv2.add(img_bg, crop_img_fg)
         img[:, -crop_y - cover_width:-cover_width] = dst
+        img = self.resize(img)
         return img
 
     def add_incline(self, cover=False):
@@ -203,7 +211,11 @@ class DefectSet(metaclass=DefectSetMetaclass):
         img = cv2.warpAffine(
             img, rotate_mat, (img.shape[1], img.shape[0]), borderValue=(
                 255, 255, 255))
-        return img
+        if cover:
+            return img
+        else:
+            img = self.resize(img)
+            return img
 
     def add_translate(self):
         """make picture translate
@@ -213,11 +225,27 @@ class DefectSet(metaclass=DefectSetMetaclass):
         """
         img = self.img
         rows, cols, _ = img.shape
-        x = np.random.randint(-100, 100)
-        y = np.random.randint(-50, 50)
+        if self.flag:
+            x = np.random.randint(-self.barcode_option['marginTop']-80,-self.barcode_option['marginTop']-10)
+            y = np.random.randint(-self.barcode_option['marginLeft']-120,-self.barcode_option['marginLeft']-10)
+            self.flag = False
+        else:
+            x = np.random.randint(self.barcode_option['marginTop']+10, self.barcode_option['marginTop']+80)
+            y = np.random.randint(self.barcode_option['marginLeft']+10, self.barcode_option['marginLeft']+120)
+            self.flag = True
         translate_mat = np.float32([[1, 0, x], [0, 1, y]])
         # 仿射变换
         img = cv2.warpAffine(
             img, translate_mat, (cols, rows), borderValue=(
                 255, 255, 255))
+        img = self.resize(img)
         return img
+
+    def resize(self, img):
+        img2 = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)) 
+        img2 = img2.resize((224,224), Image.ANTIALIAS)
+        img = cv2.cvtColor(np.asarray(img2),cv2.COLOR_RGB2BGR) 
+
+        return img
+
+

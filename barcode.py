@@ -27,7 +27,13 @@ path = {
 
 
 barcode_option = {
-    "margin": 40,
+    "margin": 0,
+    "marginLeft": 68,
+    "marginRight": 68,
+    "marginTop": 163,
+    "marginBottom": 163,
+    # 加数字减11
+    # "displayValue": "false",
     "format": ''
 }
 
@@ -113,9 +119,9 @@ class GenDefect:
                 self._defect_set.img = img
                 # run the defect function
                 img = self._defect_set.run(
-                    self._defect_set.__DefectSpecies__[t])
+                    self._defect_set.__DefectSpecies__[int(t)])
                 cv2.imwrite(
-                    self._defect_set.path[self.num2cmd[t]]
+                    self._defect_set.path[self.num2cmd[int(t)]]
                     + self._defect_set.raw_name_list[index], img)
 
     def clean(self, target='all'):
@@ -208,13 +214,35 @@ class GenDefect:
         :param type: barcode tyep
         :type type: str
         """
-        cooked_name = './tar/' + type + '_cooked_' + \
-            datetime.datetime.now().strftime('%Y_%b_%d_%H:%M')
-        raw_name = './tar/' + type + '_raw_' + \
-            datetime.datetime.now().strftime('%Y_%b_%d_%H:%M')
-        shutil.make_archive(raw_name, 'gztar', '.', 'raw')
-        shutil.make_archive(cooked_name, 'gztar', '.', 'cooked')
+        # cooked_name = './tar/' + type + '_cooked_' + \
+        #     datetime.datetime.now().strftime('%Y_%b_%d_%H:%M')
+        # raw_name = './tar/' + type + '_raw_' + \
+        #     datetime.datetime.now().strftime('%Y_%b_%d_%H:%M')
+        # cooked_name = './tar/'+type+'_cooked_'
+        # raw_name = './tar/'+type+'_raw_'
+        # shutil.make_archive(raw_name, 'gztar', '.', 'raw')
+        # shutil.make_archive(cooked_name, 'gztar', '.', 'cooked')
+        cmd = 'tar -zcf tar/data.tar.gz cooked/ raw/'
+        os.system(cmd)
 
+    def resraw(self):
+        self._defect_set.setenv()
+        for index, raw_path in enumerate(self._defect_set.raw_path_list[:]):
+            img = cv2.imread(raw_path)
+            img = self._defect_set.resize(img)
+            cv2.imwrite(
+                    self._defect_set.path[self.num2cmd[0]]
+                    + self._defect_set.raw_name_list[index], img)
+
+
+
+
+    def imginfo(self):
+        self._defect_set.setenv()
+        raw_path = self._defect_set.raw_path_list[0]
+        img = cv2.imread(raw_path)
+        rows, cols, _ = img.shape 
+        print("rows=", rows, " cols=", cols)   
 
 if __name__ == '__main__':
 
