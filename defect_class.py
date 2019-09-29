@@ -101,7 +101,7 @@ class DefectSet(metaclass=DefectSetMetaclass):
                 cols - self.barcode_option['marginLeft'])
             img[x, y] = self.white_color
         # img = Image.fromarray(img)
-        img = self.resize(img)
+        # img = self.resize(img)
         return img
 
     def add_salt_black(self, salt_num=10):
@@ -131,7 +131,7 @@ class DefectSet(metaclass=DefectSetMetaclass):
                     self.barcode_option['marginLeft'],
                     cols - self.barcode_option['marginLeft'])
             img[x, y] = self.black_color
-        img = self.resize(img)
+        # img = self.resize(img)
         return img
 
     def add_white_line(self, white_line_num=14):
@@ -144,7 +144,7 @@ class DefectSet(metaclass=DefectSetMetaclass):
                 rows - self.barcode_option['marginTop'])
             # y=np.random.randint(0,cols)
             img[x, :] = self.white_color
-        img = self.resize(img)
+        # img = self.resize(img)
         return img
 
     def add_cover(self):
@@ -186,7 +186,7 @@ class DefectSet(metaclass=DefectSetMetaclass):
 
         dst = cv2.add(img_bg, crop_img_fg)
         img[:, -crop_y - cover_width:-cover_width] = dst
-        img = self.resize(img)
+        # img = self.resize(img)
         return img
 
     def add_incline(self, cover=False):
@@ -211,11 +211,11 @@ class DefectSet(metaclass=DefectSetMetaclass):
         img = cv2.warpAffine(
             img, rotate_mat, (img.shape[1], img.shape[0]), borderValue=(
                 255, 255, 255))
-        if cover:
-            return img
-        else:
-            img = self.resize(img)
-            return img
+        # if cover:
+        #     return img
+        # else:
+        #     img = self.resize(img)
+        return img
 
     def add_translate(self):
         """make picture translate
@@ -238,7 +238,7 @@ class DefectSet(metaclass=DefectSetMetaclass):
         img = cv2.warpAffine(
             img, translate_mat, (cols, rows), borderValue=(
                 255, 255, 255))
-        img = self.resize(img)
+        # img = self.resize(img)
         return img
 
     def resize(self, img):
