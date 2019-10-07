@@ -101,7 +101,10 @@ class DefectSet(metaclass=DefectSetMetaclass):
                 cols - self.barcode_option['marginLeft'])
             img[x, y] = self.white_color
         # img = Image.fromarray(img)
-        # img = self.resize(img)
+        img = self.resize(img)
+        img = self.projection(img)
+        img = self.resize(img)
+        
         return img
 
     def add_salt_black(self, salt_num=10):
@@ -131,7 +134,10 @@ class DefectSet(metaclass=DefectSetMetaclass):
                     self.barcode_option['marginLeft'],
                     cols - self.barcode_option['marginLeft'])
             img[x, y] = self.black_color
-        # img = self.resize(img)
+        img = self.resize(img)
+        img = self.projection(img)
+        img = self.resize(img)
+        
         return img
 
     def add_white_line(self, white_line_num=14):
@@ -144,7 +150,10 @@ class DefectSet(metaclass=DefectSetMetaclass):
                 rows - self.barcode_option['marginTop'])
             # y=np.random.randint(0,cols)
             img[x, :] = self.white_color
-        # img = self.resize(img)
+        img = self.resize(img)
+        img = self.projection(img)
+        img = self.resize(img)
+        
         return img
 
     def add_cover(self):
@@ -186,7 +195,10 @@ class DefectSet(metaclass=DefectSetMetaclass):
 
         dst = cv2.add(img_bg, crop_img_fg)
         img[:, -crop_y - cover_width:-cover_width] = dst
-        # img = self.resize(img)
+        img = self.resize(img)
+        img = self.projection(img)
+        img = self.resize(img)
+        
         return img
 
     def add_incline(self, cover=False):
@@ -201,9 +213,9 @@ class DefectSet(metaclass=DefectSetMetaclass):
         while True:
             # make some optimization for add_cover
             if cover:
-                angle = np.random.randint(-3, 3)
+                angle = np.random.randint(-2, 2)
             else:
-                angle = np.random.randint(-10, 10)
+                angle = np.random.randint(-3, 3)
             if angle != 0:
                 break
         center_point = (img.shape[1] / 2, img.shape[0] / 2)
@@ -211,10 +223,13 @@ class DefectSet(metaclass=DefectSetMetaclass):
         img = cv2.warpAffine(
             img, rotate_mat, (img.shape[1], img.shape[0]), borderValue=(
                 255, 255, 255))
-        # if cover:
-        #     return img
-        # else:
-        #     img = self.resize(img)
+        if cover:
+            return img
+        else:
+            img = self.resize(img)
+            img = self.projection(img)
+            img = self.resize(img)
+            
         return img
 
     def add_translate(self):
@@ -238,14 +253,49 @@ class DefectSet(metaclass=DefectSetMetaclass):
         img = cv2.warpAffine(
             img, translate_mat, (cols, rows), borderValue=(
                 255, 255, 255))
-        # img = self.resize(img)
+        img = self.resize(img)
+        img = self.projection(img)
+        img = self.resize(img)
+        
         return img
 
     def resize(self, img):
-        img2 = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)) 
-        img2 = img2.resize((224,224), Image.ANTIALIAS)
-        img = cv2.cvtColor(np.asarray(img2),cv2.COLOR_RGB2BGR) 
+        # img2 = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)) 
+        # img2 = img2.resize((224,224), Image.ANTIALIAS)
+        # img = cv2.cvtColor(np.asarray(img2),cv2.COLOR_RGB2BGR) 
+        img = cv2.resize(img, (224,224), cv2.INTER_LINEAR)
 
         return img
 
+    def projection(self, img):
+        height, width = img.shape[:2]
+        (_, thresh) = cv2.threshold(img, 150, 255, cv2.THRESH_BINARY) 
+
+        height, width = thresh.shape[:2]
+        v = [0]*width
+        z = [0]*height
+        a = 0
+
+        #垂直投影：统计并存储每一列的黑点数
+        for x in range(0, width):               
+            for y in range(0, height):
+                if thresh[y,x][0] == 0:
+                    a = a + 1
+                else :
+                    continue
+            v[x] = a
+            a = 0
+
+        emptyImage = np.zeros((1, width, 1), np.uint8) 
+        for x in range(0,width):
+            # for y in range(0, v[x]):
+            b = (255- v[x])
+            emptyImage[0,x] = b
+
+        # cv2.imshow('original_img',img)
+        # cv2.imshow('erode',closed)
+        # cv2.imshow('chuizhi', emptyImage)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        return emptyImage
 

@@ -12,3 +12,11 @@
 9. tar code128
 10. create cooked
 11. create cover
+
+
+
+## change
+
+减小角度倾斜为-3到3，
+减小覆盖倾斜为-2到2，
+

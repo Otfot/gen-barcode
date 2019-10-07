@@ -29,7 +29,7 @@ def gen(num):
         
     # 生成原始图片样本
     os.system(defect_raw + ' '+ str(num))
-    # os.system(resize)
+    os.system(resize)
 
     # #     # // 打包图片
     os.system(tar)

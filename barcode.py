@@ -30,10 +30,10 @@ barcode_option = {
     "margin": 0,
     "marginLeft": 68,
     "marginRight": 68,
-    "marginTop": 163,
-    "marginBottom": 163,
+    "marginTop": 174,
+    "marginBottom": 174,
     # 加数字减11
-    # "displayValue": "false",
+    "displayValue": "false",
     "format": ''
 }
 
@@ -108,6 +108,7 @@ class GenDefect:
         # create different defect image by the specific type
         if len(self._defect_set.raw_path_list) == 0:
             self.genraw(10)
+            self._defect_set.setenv()
         # print(type(types))
         for t in types:
             for index, raw_path in enumerate(
@@ -230,6 +231,9 @@ class GenDefect:
         for index, raw_path in enumerate(self._defect_set.raw_path_list[:]):
             img = cv2.imread(raw_path)
             img = self._defect_set.resize(img)
+            img = self._defect_set.projection(img)
+            img = self._defect_set.resize(img)
+            
             cv2.imwrite(
                     self._defect_set.path[self.num2cmd[0]]
                     + self._defect_set.raw_name_list[index], img)
