@@ -101,9 +101,10 @@ class DefectSet(metaclass=DefectSetMetaclass):
                 cols - self.barcode_option['marginLeft'])
             img[x, y] = self.white_color
         # img = Image.fromarray(img)
-        img = self.resize(img)
         img = self.projection(img)
         img = self.resize(img)
+        
+        # img = self.resize(img)
         
         return img
 
@@ -134,9 +135,10 @@ class DefectSet(metaclass=DefectSetMetaclass):
                     self.barcode_option['marginLeft'],
                     cols - self.barcode_option['marginLeft'])
             img[x, y] = self.black_color
-        img = self.resize(img)
+        
         img = self.projection(img)
         img = self.resize(img)
+        # img = self.resize(img)
         
         return img
 
@@ -150,9 +152,10 @@ class DefectSet(metaclass=DefectSetMetaclass):
                 rows - self.barcode_option['marginTop'])
             # y=np.random.randint(0,cols)
             img[x, :] = self.white_color
-        img = self.resize(img)
+        
         img = self.projection(img)
         img = self.resize(img)
+        # img = self.resize(img)
         
         return img
 
@@ -195,9 +198,10 @@ class DefectSet(metaclass=DefectSetMetaclass):
 
         dst = cv2.add(img_bg, crop_img_fg)
         img[:, -crop_y - cover_width:-cover_width] = dst
-        img = self.resize(img)
         img = self.projection(img)
         img = self.resize(img)
+        
+        # img = self.resize(img)
         
         return img
 
@@ -226,9 +230,10 @@ class DefectSet(metaclass=DefectSetMetaclass):
         if cover:
             return img
         else:
-            img = self.resize(img)
+            
             img = self.projection(img)
             img = self.resize(img)
+            # img = self.resize(img)
             
         return img
 
@@ -253,9 +258,10 @@ class DefectSet(metaclass=DefectSetMetaclass):
         img = cv2.warpAffine(
             img, translate_mat, (cols, rows), borderValue=(
                 255, 255, 255))
-        img = self.resize(img)
+        
         img = self.projection(img)
         img = self.resize(img)
+        # img = self.resize(img)
         
         return img
 
@@ -269,28 +275,29 @@ class DefectSet(metaclass=DefectSetMetaclass):
 
     def projection(self, img):
         height, width = img.shape[:2]
-        (_, thresh) = cv2.threshold(img, 150, 255, cv2.THRESH_BINARY) 
+        h_ = [0] * height
+        w_ = [0] * width
 
-        height, width = thresh.shape[:2]
-        v = [0]*width
-        z = [0]*height
-        a = 0
+        emptyImage = np.zeros((height, width, 3), np.uint8) 
+        #水平投影：统计并存储每一行的黑点数
+        # for y in range(0, height):               
+        #     for x in range(0, width):
+        #         if img[y,x][0] == 0:
+        #             h_[y]+=1
 
-        #垂直投影：统计并存储每一列的黑点数
+        # for y in range(0, height):
+        #     for x in range(h_[y]):
+        #         emptyImage[y,x] = 255
+
+        # 垂直投影
         for x in range(0, width):               
             for y in range(0, height):
-                if thresh[y,x][0] == 0:
-                    a = a + 1
-                else :
-                    continue
-            v[x] = a
-            a = 0
+                if img[y,x][0] == 0:
+                    w_[x]+=1
 
-        emptyImage = np.zeros((1, width, 1), np.uint8) 
-        for x in range(0,width):
-            # for y in range(0, v[x]):
-            b = (255- v[x])
-            emptyImage[0,x] = b
+        for x in range(0, width):
+            for y in range(w_[x]):
+                emptyImage[y,x] = 255
 
         # cv2.imshow('original_img',img)
         # cv2.imshow('erode',closed)

@@ -119,6 +119,7 @@ class GenDefect:
                 # different defect image
                 self._defect_set.img = img
                 # run the defect function
+                print("正在生成第"+ str(index+1)+ "张图片......")
                 img = self._defect_set.run(
                     self._defect_set.__DefectSpecies__[int(t)])
                 cv2.imwrite(
@@ -232,6 +233,7 @@ class GenDefect:
             img = cv2.imread(raw_path)
             img = self._defect_set.resize(img)
             img = self._defect_set.projection(img)
+
             img = self._defect_set.resize(img)
             
             cv2.imwrite(
